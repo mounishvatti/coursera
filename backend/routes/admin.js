@@ -75,7 +75,7 @@ adminRouter.post("/signup", async function (req, res) {
   }
 });
 
-adminRouter.post("/signin", async function (req, res) {
+adminRouter.post("/signin", cookieParser, async function (req, res) {
   try {
     const { email, password } = signinSchema.parse(req.body);
     const admin = await adminModel.findOne({ email: email });
@@ -133,7 +133,7 @@ adminRouter.post("/signin", async function (req, res) {
   }
 });
 
-userRouter.post("/signout", (req, res) => {
+userRouter.post("/signout", cookieParser,(req, res) => {
   res.clearCookie("authToken");
   res.json({ message: "Logged out successfully" });
 });
