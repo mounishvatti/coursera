@@ -118,6 +118,7 @@ adminRouter.post("/signin", cookieParser, async function (req, res) {
     });
 
     res.json({ message: "Admin logged in successfully" });
+    
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({

@@ -5,6 +5,7 @@ const { JWT_USER_PASSWORD } = require("../config");
 const { userMiddleware } = require("../middleware/user");
 const bcrypt = require("bcrypt");
 import { z } from "zod";
+const cookieParser = require("cookie-parser");
 
 const userRouter = Router();
 
@@ -34,7 +35,6 @@ const signinSchema = z.object({
   password: z.string(),
 });
 
-
 userRouter.post("/signup", async (req, res) => {
   try {
     const validatedData = signupSchema.parse(req.body);
@@ -52,7 +52,6 @@ userRouter.post("/signup", async (req, res) => {
     res.json({ message: "You have successfully signed up" });
   } catch (error) {
     if (error instanceof z.ZodError) {
-
       res.status(400).json({
         message: "Validation failed",
         errors: error.errors,
@@ -66,7 +65,7 @@ userRouter.post("/signup", async (req, res) => {
   }
 });
 
-userRouter.post("/signin", async (req, res) => {
+userRouter.post("/signin", cookieParser, async (req, res) => {
   try {
     const { email, password } = signinSchema.parse(req.body);
     const user = await userModel.findOne({ email: email });
@@ -99,14 +98,22 @@ userRouter.post("/signin", async (req, res) => {
       }
     });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_USER_PASSWORD, {
+    const token = jwt.sign({ id: user._id }, JWT_USER_PASSWORD, {
       expiresIn: "7d",
     });
 
     res.json({ token });
+
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production" || true,
+      sameSite: "strict",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+
+    res.json({ message: "User logged in successfully" });
   } catch (error) {
     if (error instanceof z.ZodError) {
-
       res.status(400).json({
         message: "Validation failed",
         errors: error.errors,
@@ -122,25 +129,31 @@ userRouter.post("/signin", async (req, res) => {
 
 userRouter.get("/purchases", userMiddleware, async function (req, res) {
   const userId = req.userId;
+  try {
+    const purchases = await purchaseModel.find({
+      userId,
+    });
 
-  const purchases = await purchaseModel.find({
-    userId,
-  });
+    let purchasedCourseIds = [];
 
-  let purchasedCourseIds = [];
+    for (let i = 0; i < purchases.length; i++) {
+      purchasedCourseIds.push(purchases[i].courseId);
+    }
 
-  for (let i = 0; i < purchases.length; i++) {
-    purchasedCourseIds.push(purchases[i].courseId);
+    const coursesData = await courseModel.find({
+      _id: { $in: purchasedCourseIds },
+    });
+
+    res.json({
+      purchases,
+      coursesData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error fetching purchases",
+    });
   }
-
-  const coursesData = await courseModel.find({
-    _id: { $in: purchasedCourseIds },
-  });
-
-  res.json({
-    purchases,
-    coursesData,
-  });
 });
 
 module.exports = {
