@@ -29,14 +29,22 @@ const signupSchema = z.object({
     .min(2, { message: "Last name must be at least 2 characters" }),
 });
 
+const courseSchema = z.object({
+  title: z.string().min(2, { message: "Title must be at least 2 characters" }),
+  description: z
+    .string()
+    .min(2, { message: "Description must be at least 2 characters" }),
+  imageUrl: z.string().url({ message: "Invalid URL" }),
+  price: z.number().positive({ message: "Price cannot be negative" }),
+  courseId: z.string().optional(),
+});
+
 const signinSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string(),
 });
 
 adminRouter.post("/signup", async function (req, res) {
-  const { email, password, firstName, lastName } = req.body; // TODO: adding zod validation
-
   try {
     const validatedData = signupSchema.parse(req.body);
 
@@ -68,8 +76,6 @@ adminRouter.post("/signup", async function (req, res) {
 });
 
 adminRouter.post("/signin", async function (req, res) {
-  const { email, password } = req.body;
-
   try {
     const { email, password } = signinSchema.parse(req.body);
     const admin = await adminModel.findOne({ email: email });
@@ -133,48 +139,78 @@ userRouter.post("/signout", (req, res) => {
 });
 
 adminRouter.post("/course", adminMiddleware, async function (req, res) {
-  const adminId = req.userId;
+  try {
+    // Validate request body
+    const { title, description, imageUrl, price } = courseSchema.parse(
+      req.body
+    );
+    const adminId = req.userId;
 
-  const { title, description, imageUrl, price } = req.body;
-
-  // creating a web3 saas in 6 hours
-  const course = await courseModel.create({
-    title: title,
-    description: description,
-    imageUrl: imageUrl,
-    price: price,
-    creatorId: adminId,
-  });
-
-  res.json({
-    message: "Course created",
-    courseId: course._id,
-  });
-});
-
-adminRouter.put("/course", adminMiddleware, async function (req, res) {
-  const adminId = req.userId;
-
-  const { title, description, imageUrl, price, courseId } = req.body;
-
-  // creating a web3 saas in 6 hours
-  const course = await courseModel.updateOne(
-    {
-      _id: courseId,
-      creatorId: adminId,
-    },
-    {
+    // creating a web3 saas in 6 hours
+    const course = await courseModel.create({
       title: title,
       description: description,
       imageUrl: imageUrl,
       price: price,
-    }
-  );
+      creatorId: adminId,
+    });
 
-  res.json({
-    message: "Course updated",
-    courseId: course._id,
-  });
+    res.json({
+      message: "Course created",
+      courseId: course._id,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        message: "Validation failed",
+        errors: error.errors,
+      });
+    } else {
+      console.log(error);
+      res.status(500).json({
+        message: "Error creating course",
+      });
+    }
+  }
+});
+
+adminRouter.put("/course", adminMiddleware, async function (req, res) {
+  try {
+    // Validate request body
+    const { title, description, imageUrl, price, courseId } = courseSchema.parse(req.body);
+    const adminId = req.userId;
+
+    // creating a web3 saas in 6 hours
+    const course = await courseModel.updateOne(
+      {
+        _id: courseId,
+        creatorId: adminId,
+      },
+      {
+        title: title,
+        description: description,
+        imageUrl: imageUrl,
+        price: price,
+      }
+    );
+
+    res.json({
+      message: "Course updated",
+      courseId: course._id,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({
+        message: "Validation failed",
+        errors: error.errors,
+      });
+    } else {
+      console.log(error);
+      res.status(500).json({
+        message: "Error updating course",
+      });
+    }
+  }
 });
 
 adminRouter.get("/course/bulk", adminMiddleware, async function (req, res) {
