@@ -1,23 +1,30 @@
-require('dotenv').config()
-console.log(process.env.MONGO_URL)
-const express = require("express");
-const mongoose = require("mongoose");
+import dotenv from "dotenv";
+dotenv.config();
+console.log(process.env.MONGODB_URI);
+import express, { json } from "express";
+import { connect } from "mongoose";
 
-const { userRouter } = require("./routes/user");
-const { courseRouter } = require("./routes/course");
-const { adminRouter } = require("./routes/admin");
+import { userRouter } from "./routes/user.js";
+import { adminRouter } from "./routes/admin.js";
+import { courseRouter } from "./routes/course.js";
+
 const app = express();
-app.use(express.json());
-
+app.use(json());
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/course", courseRouter);
 
 async function main() {
-    await mongoose.connect(process.env.MONGO_URL)
+  try {
+    console.log("Connecting to database...");
+    await connect(process.env.MONGODB_URI);
+    console.log("Connected to Database");
     app.listen(3000);
-    console.log("listening on port 3000")
+    console.log("listening on port 3000");
+  } catch (err) {
+    console.log("Error connecting to database - ", err);
+  }
 }
 
-main()
+main();

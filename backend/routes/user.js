@@ -1,11 +1,12 @@
-const { Router } = require("express");
-const { userModel, purchaseModel, courseModel } = require("../db");
-const jwt = require("jsonwebtoken");
-const { JWT_USER_PASSWORD } = require("../config");
-const { userMiddleware } = require("../middleware/user");
-const bcrypt = require("bcrypt");
+import { JWT_USER_PASSWORD } from "../config.js";
+
+import { userModel, purchaseModel, courseModel } from "../db.js";
+import { Router } from "express";
+import jwt from "jsonwebtoken";
+import {userMiddleware} from "../middlewares/user.js";
+import bcrypt from "bcrypt";
 import { z } from "zod";
-const cookieParser = require("cookie-parser");
+import cookieParser from "cookie-parser";
 
 const userRouter = Router();
 
@@ -156,6 +157,4 @@ userRouter.get("/purchases", userMiddleware, async function (req, res) {
   }
 });
 
-module.exports = {
-  userRouter: userRouter,
-};
+export { userRouter };

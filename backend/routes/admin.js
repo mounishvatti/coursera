@@ -1,12 +1,13 @@
-const { Router } = require("express");
-const adminRouter = Router();
-const { adminModel, courseModel } = require("../db");
-const jwt = require("jsonwebtoken");
+import { Router } from "express";
+import { adminModel, courseModel } from "../db.js";
+import jwt from "jsonwebtoken";
 import { z } from "zod";
-const bcrypt = require("bcrypt");
-const { JWT_ADMIN_PASSWORD } = require("../config");
-const { adminMiddleware } = require("../middleware/admin");
-const cookieParser = require("cookie-parser");
+import bcrypt from "bcrypt";
+import { JWT_ADMIN_PASSWORD } from "../config.js";
+import { adminMiddleware } from "../middlewares/admin.js";
+import cookieParser from "cookie-parser";
+
+const adminRouter = Router();
 
 const signupSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -134,7 +135,7 @@ adminRouter.post("/signin", cookieParser, async function (req, res) {
   }
 });
 
-userRouter.post("/signout", cookieParser,(req, res) => {
+adminRouter.post("/signout", cookieParser,(req, res) => {
   res.clearCookie("authToken");
   res.json({ message: "Logged out successfully" });
 });
@@ -227,6 +228,4 @@ adminRouter.get("/course/bulk", adminMiddleware, async function (req, res) {
   });
 });
 
-module.exports = {
-  adminRouter: adminRouter,
-};
+export{ adminRouter };

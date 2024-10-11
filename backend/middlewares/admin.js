@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
-const { JWT_ADMIN_PASSWORD } = require("../config");
+import jwt from "jsonwebtoken";
+import { JWT_ADMIN_PASSWORD } from "../config.js";
 
 // function middleware(password) {
 //     return function(req, res, next) {
@@ -31,6 +31,4 @@ function adminMiddleware(req, res, next) {
     }
 };
 
-module.exports = {
-    adminMiddleware: adminMiddleware
-}
+export { adminMiddleware }
