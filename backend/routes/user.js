@@ -66,65 +66,114 @@ userRouter.post("/signup", async (req, res) => {
   }
 });
 
+// userRouter.post("/signin", cookieParser, async (req, res) => {
+//   try {
+//     const { email, password } = signinSchema.parse(req.body);
+//     const user = await userModel.findOne({ email: email });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     bcrypt.compare(password, user.password, (err, result) => {
+//       if (err) {
+//         console.log(err);
+//         return res.status(500).json({
+//           message: "Error comparing passwords",
+//         });
+//       }
+//       if (!result) {
+//         return res.status(401).json({
+//           message: "Incorrect credentials",
+//         });
+//       } else {
+//         const token = jwt.sign(
+//           {
+//             id: user._id,
+//           },
+//           JWT_USER_PASSWORD
+//         );
+
+//         res.json({
+//           token: token,
+//         });
+//       }
+//     });
+
+//     const token = jwt.sign({ id: user._id }, JWT_USER_PASSWORD, {
+//       expiresIn: "7d",
+//     });
+
+//     res.json({ token });
+
+//     res.cookie("authToken", token, {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production" || true,
+//       sameSite: "strict",
+//       maxAge: 1000 * 60 * 60 * 24 * 7,
+//     });
+
+//     res.json({ message: "User logged in successfully" });
+//   } catch (error) {
+//     if (error instanceof z.ZodError) {
+//       res.status(400).json({
+//         message: "Validation failed",
+//         errors: error.errors,
+//       });
+//     } else {
+//       console.log(error);
+//       res.status(500).json({
+//         message: "Error logging in",
+//       });
+//     }
+//   }
+// });
+
 userRouter.post("/signin", cookieParser, async (req, res) => {
   try {
+    // Validate the input
     const { email, password } = signinSchema.parse(req.body);
+
+    // Find the user by email
     const user = await userModel.findOne({ email: email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    bcrypt.compare(password, user.password, (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({
-          message: "Error comparing passwords",
-        });
-      }
-      if (!result) {
-        return res.status(401).json({
-          message: "Incorrect credentials",
-        });
-      } else {
-        const token = jwt.sign(
-          {
-            id: user._id,
-          },
-          JWT_USER_PASSWORD
-        );
+    // Compare the passwords
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Incorrect credentials" });
+    }
 
-        res.json({
-          token: token,
-        });
-      }
-    });
-
+    // Generate the JWT token
     const token = jwt.sign({ id: user._id }, JWT_USER_PASSWORD, {
       expiresIn: "7d",
     });
 
-    res.json({ token });
-
+    // Set the auth token cookie
     res.cookie("authToken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production" || true,
       sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24 * 7,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     });
 
-    res.json({ message: "User logged in successfully" });
+    // Send a successful response with the token
+    res.json({ message: "User logged in successfully", token });
   } catch (error) {
+    // Handle validation errors
     if (error instanceof z.ZodError) {
-      res.status(400).json({
+      return res.status(400).json({
         message: "Validation failed",
         errors: error.errors,
       });
-    } else {
-      console.log(error);
-      res.status(500).json({
-        message: "Error logging in",
-      });
     }
+
+    // Log any unexpected errors and send a 500 error
+    console.log(error);
+    res.status(500).json({
+      message: "Error logging in",
+    });
   }
 });
 
