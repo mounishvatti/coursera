@@ -1,34 +1,89 @@
 import { Schema as _Schema, Types, model } from "mongoose";
 
-
 const Schema = _Schema;
 const ObjectId = Types.ObjectId;
 
 const userSchema = new Schema({
-    email: { type: String, unique: true },
-    password: String,
-    firstName: String,
-    lastName: String,
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
+  password: {
+    type: String,
+    required: true,
+  },
+
+  firstName: {
+    type: String,
+    required: true,
+  },
+
+  lastName: {
+    type: String,
+    required: true,
+  },
 });
 
 const adminSchema = new Schema({
-    email: { type: String, unique: true },
-    password: String,
-    firstName: String,
-    lastName: String,
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+  },
+
+  password: {
+    type: String,
+    required: true,
+  },
+
+  firstName: {
+    type: String,
+    required: true,
+  },
+
+  lastName: {
+    type: String,
+    required: true,
+  },
 });
 
 const courseSchema = new Schema({
-    title: String,
-    description: String,
-    price: Number,
-    imageUrl: String,
-    creatorId: ObjectId
+  title: {
+    type: String,
+    required: true,
+  },
+
+  description: {
+    type: String,
+  },
+
+  price: {
+    type: Number,
+    required: true,
+  },
+
+  imageUrl: {
+    type: String,
+  },
+
+  creatorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "admin",
+  },
 });
 
 const purchaseSchema = new Schema({
-    userId: ObjectId,
-    courseId: ObjectId
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "admin",
+  },
+
+  courseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "course",
+  },
 });
 
 const userModel = model("user", userSchema);
