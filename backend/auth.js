@@ -20,3 +20,5 @@ function verifyToken(req, res, next) {
 }
 
 export { verifyToken, JWT_SECRET }
+
+// No longer used - if cookie based auth doesn't work use this!

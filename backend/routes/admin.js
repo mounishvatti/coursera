@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { adminMiddleware } from "../middlewares/admin.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const adminRouter = Router();
 
