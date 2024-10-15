@@ -1,5 +1,5 @@
-import { JWT_USER_PASSWORD } from "../config.js";
-
+import dotenv from "dotenv";
+dotenv.config();
 import { userModel, purchaseModel, courseModel } from "../db.js";
 import { Router } from "express";
 import jwt from "jsonwebtoken";
@@ -146,20 +146,19 @@ userRouter.post("/signin", cookieParser, async (req, res) => {
     }
 
     // Generate the JWT token
-    const token = jwt.sign({ id: user._id }, JWT_USER_PASSWORD, {
-      expiresIn: "7d",
+    const token = jwt.sign({ id: user._id }, process.env.JWT_USER_PASSWORD, {
+      expiresIn: "2h",
     });
 
     // Set the auth token cookie
-    res.cookie("authToken", token, {
+    res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production" || true,
-      sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+      sameSite: "Strict",
     });
 
     // Send a successful response with the token
-    res.json({ message: "User logged in successfully", token });
+    res.send({ message: "User logged in successfully", token });
   } catch (error) {
     // Handle validation errors
     if (error instanceof z.ZodError) {

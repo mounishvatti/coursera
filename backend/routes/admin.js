@@ -3,10 +3,7 @@ import { adminModel, courseModel } from "../db.js";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import bcrypt from "bcrypt";
-import { JWT_ADMIN_PASSWORD } from "../config.js";
 import { adminMiddleware } from "../middlewares/admin.js";
-import cookieParser from "cookie-parser";
-import { verifyToken } from "../auth.js";
 
 const adminRouter = Router();
 
@@ -102,8 +99,8 @@ adminRouter.post("/signin", async function (req, res) {
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     } else {
-      console.log(admin);
-      console.log(JWT_ADMIN_PASSWORD);
+      // console.log(admin);
+      // console.log(JWT_ADMIN_PASSWORD);
 
       // Compare the passwords
       bcrypt.compare(password, admin.password, (err, result) => {
@@ -114,10 +111,18 @@ adminRouter.post("/signin", async function (req, res) {
         if (!result) {
           return res.status(401).json({ message: "Incorrect credentials" });
         } else {
+          
           const token = jwt.sign({ id: admin._id.toString() }, process.env.JWT_ADMIN_PASSWORD, { expiresIn: "2h" });
+          
+          res.cookie('token', token,{
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Strict'
+          });
 
-          res.json({
-            token: token,
+          res.send({
+            message: "Admin logged in successfully", 
+            JWT: token
           });
         }
       });
@@ -198,8 +203,8 @@ adminRouter.post("/signin", async function (req, res) {
 //   }
 // });
 
-adminRouter.post("/signout", verifyToken, (req, res) => {
-  res.clearCookie("authToken");
+adminRouter.post("/signout", adminMiddleware, (req, res) => {
+  res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
 });
 
