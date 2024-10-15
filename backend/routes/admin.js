@@ -107,18 +107,21 @@ adminRouter.post("/signin", async function (req, res) {
         if (!result) {
           return res.status(401).json({ message: "Incorrect credentials" });
         } else {
-          
-          const token = jwt.sign({ id: admin._id.toString() }, process.env.JWT_ADMIN_PASSWORD, { expiresIn: "2h" });
-          
-          res.cookie('token', token,{
+          const token = jwt.sign(
+            { id: admin._id.toString() },
+            process.env.JWT_ADMIN_PASSWORD,
+            { expiresIn: "2h" }
+          );
+
+          res.cookie("token", token, {
             httpOnly: true,
             secure: true,
-            sameSite: 'Strict'
+            sameSite: "Strict",
           });
 
           res.send({
-            message: "Admin logged in successfully", 
-            JWT: token
+            message: "Admin logged in successfully",
+            JWT: token,
           });
         }
       });
@@ -181,7 +184,7 @@ adminRouter.post("/course", adminMiddleware, async function (req, res) {
   }
 });
 
-adminRouter.put("/course", adminMiddleware, async function (req, res) {
+adminRouter.put("/course-update", adminMiddleware, async function (req, res) {
   try {
     // Validate request body
     const { title, description, imageUrl, price, courseId } =
@@ -220,6 +223,41 @@ adminRouter.put("/course", adminMiddleware, async function (req, res) {
     }
   }
 });
+
+adminRouter.delete(
+  "/course-delete",
+  adminMiddleware,
+  async function (req, res) {
+    const { courseId } = req.body; // Destructuring courseId from req.body
+    const adminId = req.userId; // Assuming this comes from adminMiddleware
+
+    try {
+      // Check if the course exists
+      const courseDetails = await courseModel.findById(courseId);
+      if (!courseDetails) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      // Check if the admin has permission to delete the course
+      if (adminId === courseDetails.creatorId.toString()) {
+        // If everything is fine, delete the course
+        await courseModel.findByIdAndDelete(courseId);
+
+        // Return success response
+        res.status(200).json({ message: "Course deleted successfully" });
+      } else {
+        // If the admin is not authorized to delete the course
+        return res
+          .status(403)
+          .json({ message: "You are not authorized to delete this course" });
+      }
+    } catch (error) {
+      // Handle any errors that occur during the process
+      console.error("Error deleting course:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 
 adminRouter.get("/course/bulk", adminMiddleware, async function (req, res) {
   const adminId = req.userId;
