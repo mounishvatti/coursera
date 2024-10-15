@@ -76,12 +76,12 @@ const courseSchema = new Schema({
 
 const purchaseSchema = new Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "admin",
   },
 
   courseId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "course",
   },
 });
