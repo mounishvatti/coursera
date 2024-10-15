@@ -80,7 +80,6 @@ adminRouter.post("/signup", async function (req, res) {
         errors: error.errors,
       });
     }
-
     // Log the error and return a generic 500 error if something goes wrong
     console.log(error);
     res.status(500).json({
@@ -99,9 +98,6 @@ adminRouter.post("/signin", async function (req, res) {
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     } else {
-      // console.log(admin);
-      // console.log(JWT_ADMIN_PASSWORD);
-
       // Compare the passwords
       bcrypt.compare(password, admin.password, (err, result) => {
         if (err) {
@@ -143,65 +139,6 @@ adminRouter.post("/signin", async function (req, res) {
     });
   }
 });
-
-// adminRouter.post("/signin", cookieParser, async function (req, res) {
-//   try {
-//     const { email, password } = signinSchema.parse(req.body);
-//     const admin = await adminModel.findOne({ email: email });
-//     if (!admin) {
-//       return res.status(404).json({ message: "Admin not found" });
-//     }
-
-//     bcrypt.compare(password, admin.password, (err, result) => {
-//       if (err) {
-//         console.log(err);
-//         return res.status(500).json({ message: "Error comparing passwords" });
-//       }
-//       if (!result) {
-//         return res.status(401).json({ message: "Incorrect credentials" });
-//       } else {
-//         const token = jwt.sign(
-//           {
-//             id: admin._id,
-//           },
-//           JWT_ADMIN_PASSWORD
-//         );
-
-//         res.json({
-//           token: token,
-//         });
-//       }
-//     });
-
-//     const token = jwt.sign({ id: admin._id }, JWT_ADMIN_PASSWORD, {
-//       expiresIn: "7d",
-//     });
-
-//     res.json({ token });
-
-//     res.cookie("authToken", token, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production" || true,
-//       sameSite: "strict",
-//       maxAge: 1000 * 60 * 60 * 24 * 7,
-//     });
-
-//     res.json({ message: "Admin logged in successfully" });
-
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       res.status(400).json({
-//         message: "Validation failed",
-//         errors: error.errors,
-//       });
-//     } else {
-//       console.log(error);
-//       res.status(500).json({
-//         message: "Error logging in",
-//       });
-//     }
-//   }
-// });
 
 adminRouter.post("/signout", adminMiddleware, (req, res) => {
   res.clearCookie("token");
