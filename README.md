@@ -1,4 +1,4 @@
-# Course Selling App
+# Course Selling App - (Development in progress)
 
 This project is a full-stack course selling application built using the MERN stack (MongoDB, Express, React, Node.js). It allows users to browse, purchase, and manage courses while providing admins the ability to manage course content, user accounts, and purchases.
 
