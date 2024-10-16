@@ -68,7 +68,7 @@ const courseSchema = new Schema({
   },
 
   creatorId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "admin",
   },
 });
