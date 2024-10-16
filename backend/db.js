@@ -1,7 +1,6 @@
 import { Schema as _Schema, Types, model } from "mongoose";
 
 const Schema = _Schema;
-const ObjectId = Types.ObjectId;
 
 const userSchema = new Schema({
   email: {
